@@ -30,7 +30,7 @@ def login_button_callback(sender, appdata, text_input):
             conn = sqldb(path)
             
             if conn.connection != None:
-                gen_connection(conn, CONN_NUMBER)
+                gen_connection(conn, CONN_NUMBER, filename)
                 CONN_NUMBER += 1
             else:
                 print_error("Erreur pendant l'ouverture de la db")
@@ -51,14 +51,40 @@ def login():
       # popup widow in case of error  
     with dpg.popup(login_button, modal=True, tag="my_super_button_id"):
         dpg.add_text("", tag="my_super_error_displaying")
-        dpg.add_button(label="Close", callback=lambda: dpg.configure_item("my_super_button_id", show=False))
+        dpg.add_button(label="Fermer", callback=lambda: dpg.configure_item("my_super_button_id", show=False))
 
 
+def check_callback(sender, appdata):
+    state = dpg.get_value(sender)
+    dpg.configure_item("f_output", show=state)
+    dpg.configure_item("check_output", show=state)
+        
 
-def gen_connection(conn, n):
-    
-    with dpg.window(label=f"Connection {n}", width=200, height=400, pos=[200, 0]):
-        pass
+
+def gen_connection(conn, n, filename):
+
+    with dpg.window(label=f"Connection {n} ({filename})", width=350, height=400, pos=[350*n+200, 0]):
+        # executer depuis un fichier
+        dpg.add_text("Executer depuis un fichier :")
+        f_input = dpg.add_input_text()
+        dpg.add_button(label="Executer")
+        
+        # saut de ligne
+        dpg.add_text()
+        
+        # executer depuis l'input
+        dpg.add_text("Executer depuis l'entrée :")
+        querry_input = dpg.add_input_text(multiline=True)
+        dpg.add_button(label="Executer")
+        
+        dpg.add_text()
+        
+        dpg.add_checkbox(label="Afficher la sortie", default_value=True)
+        dpg.add_checkbox(label="Enregistrer la sortie dans un fichier", default_value=False, callback=check_callback)
+        f_output = dpg.add_input_text(tag="f_output")
+        dpg.add_checkbox(label="créer le fichier de sortie si il n'existe pas", default_value=True, tag="check_output")
+        dpg.configure_item("f_output", show=False)
+        dpg.configure_item("check_output", show=False)
 
 
 def run():

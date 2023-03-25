@@ -25,7 +25,7 @@ class sqldb:
         cursor = self.connection.cursor()
         
         try:
-            cursor.execute(code)
+            cursor.executescript(code)
             self.connection.commit()
         except Error as e:
             print(f"Error : {e}")
