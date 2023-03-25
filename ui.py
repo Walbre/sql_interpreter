@@ -1,8 +1,65 @@
 import dearpygui.dearpygui as dpg
 import json
 import os
+from interpreter import sqldb
 
 os.chdir(os.path.dirname(__file__))
+
+
+CONN_NUMBER = 0
+
+def print_error(error_txt):
+    dpg.set_value("my_super_error_displaying", error_txt)
+    dpg.configure_item("my_super_button_id", show=True)
+            
+
+
+def login_button_callback(sender, appdata, text_input):
+    global CONN_NUMBER
+    
+    path = dpg.get_value(text_input[0])
+    create_file = dpg.get_value(text_input[1])
+    
+    # faire un test si le fichier existe
+    basedir = os.path.dirname(path).replace("./", f"{os.getcwd()}/")
+    filename = os.path.basename(path)
+    
+    try:
+        ls = os.listdir(basedir)
+        if (filename in ls and not create_file) or (not filename in ls and create_file):
+            conn = sqldb(path)
+            
+            if conn.connection != None:
+                gen_connection(conn, CONN_NUMBER)
+                CONN_NUMBER += 1
+            else:
+                print_error("Erreur pendant l'ouverture de la db")
+        else:
+            print_error("Mauvais nom de fichier")
+    except FileNotFoundError:
+        print_error("Mauvais chemin d'accès")
+
+
+def login():
+    dpg.create_context()
+
+    with dpg.window(label="Connection a la db", width=200, height=100):
+        input1 = dpg.add_input_text(label="DB path", default_value="")
+        chk_box = dpg.add_checkbox(label="Créer un fichier", default_value=False)
+        login_button = dpg.add_button(label="Connection", callback=login_button_callback, user_data=(input1, chk_box))
+      
+      # popup widow in case of error  
+    with dpg.popup(login_button, modal=True, tag="my_super_button_id"):
+        dpg.add_text("", tag="my_super_error_displaying")
+        dpg.add_button(label="Close", callback=lambda: dpg.configure_item("my_super_button_id", show=False))
+
+
+
+def gen_connection(conn, n):
+    
+    with dpg.window(label=f"Connection {n}", width=200, height=400, pos=[200, 0]):
+        pass
+
 
 def run():
     
@@ -31,13 +88,6 @@ def run():
     dpg.destroy_context()
 
 
-def login():
-    dpg.create_context()
-
-    with dpg.window(label="Tutorial"):
-        b0 = dpg.add_button(label="button 0")
-        b1 = dpg.add_button(tag=100, label="Button 1")
-        dpg.add_button(tag="Btn2", label="Button 2")
     
 
 
